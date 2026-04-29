@@ -30,8 +30,13 @@ async function waitForDB() {
       name TEXT,
       x INT,
       y INT,
-      status TEXT
+      status TEXT DEFAULT 'green'
     );
+  `);
+
+  await pool.query(`
+    ALTER TABLE machines
+    ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'green';
   `);
 }
 
@@ -44,7 +49,7 @@ app.post("/machines", async (req, res) => {
   const { name, x, y, status } = req.body;
   await pool.query(
     "INSERT INTO machines(name,x,y,status) VALUES($1,$2,$3,$4)",
-    [name, x, y, status]
+    [name, x, y, status || "green"]
   );
   res.sendStatus(200);
 });
