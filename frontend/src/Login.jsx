@@ -16,7 +16,7 @@ export default function Login({setToken}){
 
  return(
   <div style={{padding:20}}>
-    <h2>Bejelentkezés</h2>
+    <h2>Login</h2>
     <input placeholder="user" onChange={e=>setU(e.target.value)}/>
     <input type="password" placeholder="pass" onChange={e=>setP(e.target.value)}/>
     <button onClick={login}>Login</button>

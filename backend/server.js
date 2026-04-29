@@ -9,8 +9,6 @@ const app=express();
 app.use(cors());
 app.use(express.json());
 
-const SECRET="secret";
-
 const upload=multer({dest:"uploads/"});
 app.use("/uploads",express.static("uploads"));
 
@@ -20,6 +18,8 @@ const pool=new Pool({
  password:process.env.DB_PASSWORD,
  database:process.env.DB_NAME
 });
+
+const SECRET=process.env.JWT_SECRET;
 
 async function waitDB(){
  while(true){
@@ -67,7 +67,6 @@ async function init(){
  `);
 }
 
-// auth middleware
 function auth(req,res,next){
  const token=req.headers.authorization;
  if(!token) return res.sendStatus(401);
@@ -77,22 +76,18 @@ function auth(req,res,next){
  }catch{res.sendStatus(401);}
 }
 
-// login
 app.post("/login",async(req,res)=>{
  const {username,password}=req.body;
  const r=await pool.query("SELECT * FROM users WHERE username=$1 AND password=$2",[username,password]);
  if(!r.rows.length) return res.sendStatus(401);
-
  const token=jwt.sign({username},SECRET,{expiresIn:"8h"});
- res.json({token,username});
+ res.json({token});
 });
 
-// layout
-app.post("/layout",upload.single("file"),auth,async(req,res)=>{
- const p=req.file.path;
+app.post("/layout",auth,upload.single("file"),async(req,res)=>{
  await pool.query("DELETE FROM settings");
- await pool.query("INSERT INTO settings(layout) VALUES($1)",["/"+p]);
- res.json({path:"/"+p});
+ await pool.query("INSERT INTO settings(layout) VALUES($1)",["/"+req.file.path]);
+ res.sendStatus(200);
 });
 
 app.get("/layout",auth,async(req,res)=>{
@@ -100,7 +95,6 @@ app.get("/layout",auth,async(req,res)=>{
  res.json(r.rows[0]||{});
 });
 
-// machines
 app.get("/machines",auth,async(req,res)=>{
  const r=await pool.query("SELECT * FROM machines ORDER BY name ASC");
  res.json(r.rows);
@@ -118,12 +112,10 @@ app.put("/machines/:id",auth,async(req,res)=>{
  res.sendStatus(200);
 });
 
-// upload
 app.post("/upload",auth,upload.single("file"),(req,res)=>{
  res.json({path:"/"+req.file.path});
 });
 
-// logs
 app.get("/logs/:id",auth,async(req,res)=>{
  const r=await pool.query("SELECT * FROM logs WHERE machine_id=$1 ORDER BY created_at DESC",[req.params.id]);
  res.json(r.rows);
@@ -135,16 +127,6 @@ app.post("/logs",auth,async(req,res)=>{
   "INSERT INTO logs(machine_id,text,image,username) VALUES($1,$2,$3,$4)",
   [machine_id,text,image,req.user.username]
  );
- res.sendStatus(200);
-});
-
-app.put("/logs/:id",auth,async(req,res)=>{
- await pool.query("UPDATE logs SET text=$1 WHERE id=$2",[req.body.text,req.params.id]);
- res.sendStatus(200);
-});
-
-app.delete("/logs/:id",auth,async(req,res)=>{
- await pool.query("DELETE FROM logs WHERE id=$1",[req.params.id]);
  res.sendStatus(200);
 });
 
