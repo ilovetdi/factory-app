@@ -14,16 +14,7 @@ const pool = new Pool({
   database: process.env.DB_NAME
 });
 
-async function waitForDB() {
-  while (true) {
-    try {
-      await pool.query("SELECT 1");
-      break;
-    } catch {
-      await new Promise(r => setTimeout(r, 2000));
-    }
-  }
-
+async function init() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS machines (
       id SERIAL PRIMARY KEY,
@@ -35,54 +26,49 @@ async function waitForDB() {
   `);
 
   await pool.query(`
-    ALTER TABLE machines ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'green';
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS layout (
+    CREATE TABLE IF NOT EXISTS logs (
       id SERIAL PRIMARY KEY,
-      image TEXT
+      machine_id INT,
+      text TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 }
 
-app.get("/machines", async (req, res) => {
+app.get("/machines", async (req,res)=>{
   const r = await pool.query("SELECT * FROM machines");
   res.json(r.rows);
 });
 
-app.post("/machines", async (req, res) => {
-  const { name, x, y, status } = req.body;
-  await pool.query(
-    "INSERT INTO machines(name,x,y,status) VALUES($1,$2,$3,$4)",
-    [name, x, y, status || "green"]
-  );
+app.get("/machines/:id", async (req,res)=>{
+  const r = await pool.query("SELECT * FROM machines WHERE id=$1",[req.params.id]);
+  res.json(r.rows[0]);
+});
+
+app.post("/machines", async (req,res)=>{
+  const {name,x,y} = req.body;
+  await pool.query("INSERT INTO machines(name,x,y) VALUES($1,$2,$3)",[name,x,y]);
   res.sendStatus(200);
 });
 
-app.put("/machines/:id", async (req, res) => {
-  const { x, y } = req.body;
-  await pool.query(
-    "UPDATE machines SET x=$1,y=$2 WHERE id=$3",
-    [x, y, req.params.id]
-  );
+app.put("/machines/:id", async (req,res)=>{
+  const {x,y} = req.body;
+  await pool.query("UPDATE machines SET x=$1,y=$2 WHERE id=$3",[x,y,req.params.id]);
   res.sendStatus(200);
 });
 
-// layout
-app.post("/layout", async (req, res) => {
-  const { image } = req.body;
-  await pool.query("DELETE FROM layout");
-  await pool.query("INSERT INTO layout(image) VALUES($1)", [image]);
+app.get("/logs/:id", async (req,res)=>{
+  const r = await pool.query("SELECT * FROM logs WHERE machine_id=$1 ORDER BY created_at DESC",[req.params.id]);
+  res.json(r.rows);
+});
+
+app.post("/logs", async (req,res)=>{
+  const {machine_id,text} = req.body;
+  await pool.query("INSERT INTO logs(machine_id,text) VALUES($1,$2)",[machine_id,text]);
   res.sendStatus(200);
 });
 
-app.get("/layout", async (req, res) => {
-  const r = await pool.query("SELECT * FROM layout LIMIT 1");
-  res.json(r.rows[0] || {});
-});
-
-app.listen(3000, "0.0.0.0", async () => {
-  await waitForDB();
+app.listen(3000,"0.0.0.0", async ()=>{
+  await init();
   console.log("Backend running");
 });

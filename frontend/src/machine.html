@@ -1,0 +1,20 @@
+
+<!DOCTYPE html>
+<html><body>
+<div id="root"></div>
+<script type="module">
+const id = window.location.pathname.split("/").pop();
+fetch("/api/machines/"+id).then(r=>r.json()).then(m=>{
+ document.body.innerHTML = "<h1>"+m.name+"</h1><div id='logs'></div><input id='txt'><button onclick='add()'>Add</button>";
+ load();
+ function load(){
+  fetch("/api/logs/"+id).then(r=>r.json()).then(l=>{
+    document.getElementById("logs").innerHTML = l.map(x=>"<div>"+x.text+"</div>").join("");
+  });
+ }
+ window.add=()=>{
+  fetch("/api/logs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({machine_id:id,text:document.getElementById("txt").value})}).then(load);
+ }
+});
+</script>
+</body></html>

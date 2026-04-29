@@ -1,10 +1,7 @@
 
 {
-  "name": "frontend",
   "private": true,
-  "scripts": {
-    "build": "vite build"
-  },
+  "scripts": { "build": "vite build" },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
