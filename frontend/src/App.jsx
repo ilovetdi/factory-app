@@ -1,47 +1,71 @@
 
-import React, {useEffect,useState} from "react";
+import React, { useEffect, useState } from "react";
 import Draggable from "react-draggable";
 
-export default function App(){
-  const [machines,setMachines]=useState([]);
+const API = "http://192.168.88.30:3000";
 
-  useEffect(()=>{
-    fetch("http://localhost:3000/machines")
-    .then(r=>r.json())
-    .then(setMachines);
-  },[]);
+export default function App() {
+  const [machines, setMachines] = useState([]);
 
-  const add=()=>{
-    const m={name:"Machine "+(machines.length+1),x:100,y:100};
-    fetch("http://localhost:3000/machines",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(m)
-    }).then(()=>window.location.reload());
+  useEffect(() => {
+    load();
+  }, []);
+
+  const load = async () => {
+    const res = await fetch(API + "/machines");
+    const data = await res.json();
+    setMachines(data);
   };
 
-  return(
-    <div style={{padding:20}}>
+  const add = async () => {
+    await fetch(API + "/machines", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Machine",
+        x: 100,
+        y: 100,
+        status: "green"
+      })
+    });
+    load();
+  };
+
+  const update = async (id, x, y) => {
+    await fetch(API + "/machines/" + id, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ x, y })
+    });
+  };
+
+  return (
+    <div style={{ padding: 20, background: "#1e1e1e", color: "white", minHeight: "100vh" }}>
       <h1>🏭 Industrial Panel</h1>
       <button onClick={add}>+ Machine</button>
 
       <div style={{
-        position:"relative",
-        height:"80vh",
-        border:"2px solid #333",
-        marginTop:20
+        position: "relative",
+        height: "80vh",
+        border: "2px solid #555",
+        marginTop: 20
       }}>
-        {machines.map(m=>(
-          <Draggable key={m.id} defaultPosition={{x:m.x,y:m.y}}>
+        {machines.map(m => (
+          <Draggable
+            key={m.id}
+            defaultPosition={{ x: m.x, y: m.y }}
+            onStop={(e, d) => update(m.id, d.x, d.y)}
+          >
             <div style={{
-              width:80,
-              height:50,
-              background:"green",
-              color:"#fff",
-              display:"flex",
-              alignItems:"center",
-              justifyContent:"center",
-              position:"absolute"
+              position: "absolute",
+              width: 100,
+              height: 60,
+              background: m.status === "green" ? "#2ecc71" : "#e67e22",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 8,
+              cursor: "pointer"
             }}>
               {m.name}
             </div>

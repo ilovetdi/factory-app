@@ -1,5 +1,6 @@
 
 version: "3.8"
+
 services:
   db:
     image: postgres:15
@@ -19,7 +20,6 @@ services:
       DB_USER: admin
       DB_PASSWORD: admin
       DB_NAME: factory
-      JWT_SECRET: secret123
     ports:
       - "3000:3000"
     depends_on:
