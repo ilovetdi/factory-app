@@ -19,6 +19,8 @@ services:
       DB_NAME: factory
     ports:
       - "3000:3000"
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       - db
 
@@ -31,3 +33,4 @@ services:
 
 volumes:
   db_data:
+  uploads:
