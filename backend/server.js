@@ -13,8 +13,22 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME
 });
+async function waitForDB() {
+  while (true) {
+    try {
+      await pool.query("SELECT 1");
+      console.log("✅ DB ready");
+      break;
+    } catch (e) {
+      console.log("⏳ waiting for DB...");
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+}
 
 async function init() {
+  await waitForDB();
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS machines (
       id SERIAL PRIMARY KEY,
@@ -45,7 +59,9 @@ async function init() {
   await pool.query(`
     INSERT INTO users(username,password)
     SELECT 'admin','admin'
-    WHERE NOT EXISTS (SELECT 1 FROM users WHERE username='admin');
+    WHERE NOT EXISTS (
+      SELECT 1 FROM users WHERE username='admin'
+    );
   `);
 }
 
