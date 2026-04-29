@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Draggable from "react-draggable";
 
-const API = "http://192.168.88.30:3000";
+const API = "http://backend:3000";
 
 export default function App() {
   const [machines, setMachines] = useState([]);
