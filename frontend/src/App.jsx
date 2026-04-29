@@ -1,1 +1,16 @@
-import React,{useState}from'react';import Login from'./Login';import Map from'./Map';export default function App(){const[t,setT]=useState(localStorage.getItem('token'));if(!t)return<Login setToken={setT}/>;return<Map token={t}/>;}
+import React,{useState} from "react";
+
+export default function App(){
+ const [logged,setLogged]=useState(false);
+
+ if(!logged){
+  return (
+   <div style={{padding:20}}>
+    <h2>Login</h2>
+    <button onClick={()=>setLogged(true)}>Belépés</button>
+   </div>
+  );
+ }
+
+ return <div style={{padding:20}}>APP OK ✔</div>;
+}
