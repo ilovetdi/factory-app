@@ -139,3 +139,6 @@ app.listen(3000, async () => {
   await waitForDB();
   console.log("🚀 Backend running on port 3000");
 });
+app.get("/", (req, res) => {
+  res.send("🚀 Factory Backend is running");
+});
