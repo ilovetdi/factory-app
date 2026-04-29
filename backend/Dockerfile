@@ -4,5 +4,5 @@ WORKDIR /app
 COPY package.json .
 RUN npm install
 COPY . .
-RUN mkdir -p uploads/logs
+RUN mkdir -p uploads/logs uploads/layout
 CMD ["node","server.js"]
