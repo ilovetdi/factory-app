@@ -35,8 +35,14 @@ async function waitForDB() {
   `);
 
   await pool.query(`
-    ALTER TABLE machines
-    ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'green';
+    ALTER TABLE machines ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'green';
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS layout (
+      id SERIAL PRIMARY KEY,
+      image TEXT
+    );
   `);
 }
 
@@ -61,6 +67,19 @@ app.put("/machines/:id", async (req, res) => {
     [x, y, req.params.id]
   );
   res.sendStatus(200);
+});
+
+// layout
+app.post("/layout", async (req, res) => {
+  const { image } = req.body;
+  await pool.query("DELETE FROM layout");
+  await pool.query("INSERT INTO layout(image) VALUES($1)", [image]);
+  res.sendStatus(200);
+});
+
+app.get("/layout", async (req, res) => {
+  const r = await pool.query("SELECT * FROM layout LIMIT 1");
+  res.json(r.rows[0] || {});
 });
 
 app.listen(3000, "0.0.0.0", async () => {
