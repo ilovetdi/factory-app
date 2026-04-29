@@ -1,4 +1,3 @@
-
 const express=require("express");
 const cors=require("cors");
 const {Pool}=require("pg");
@@ -32,21 +31,18 @@ async function init(){
 
  await pool.query(`CREATE TABLE IF NOT EXISTS machines(
   id SERIAL PRIMARY KEY,
-  name TEXT,
-  x INT,
-  y INT
- );`);
+  name TEXT,x INT,y INT);`);
+
+ await pool.query(`CREATE TABLE IF NOT EXISTS logs(
+  id SERIAL PRIMARY KEY,
+  machine_id INT,text TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
 
  await pool.query(`CREATE TABLE IF NOT EXISTS settings(
-  id SERIAL PRIMARY KEY,
-  layout TEXT
- );`);
+  id SERIAL PRIMARY KEY,layout TEXT);`);
 
  await pool.query(`CREATE TABLE IF NOT EXISTS users(
-  id SERIAL PRIMARY KEY,
-  username TEXT,
-  password TEXT
- );`);
+  id SERIAL PRIMARY KEY,username TEXT,password TEXT);`);
 
  await pool.query(`INSERT INTO users(username,password)
  SELECT 'admin','admin'
@@ -86,6 +82,17 @@ app.get("/machines",auth,async(req,res)=>{
 app.post("/machines",auth,async(req,res)=>{
  const {name,x,y}=req.body;
  await pool.query("INSERT INTO machines(name,x,y) VALUES($1,$2,$3)",[name,x,y]);
+ res.sendStatus(200);
+});
+
+app.get("/logs/:id",auth,async(req,res)=>{
+ const r=await pool.query("SELECT * FROM logs WHERE machine_id=$1 ORDER BY created_at DESC",[req.params.id]);
+ res.json(r.rows);
+});
+
+app.post("/logs",auth,async(req,res)=>{
+ const {machine_id,text}=req.body;
+ await pool.query("INSERT INTO logs(machine_id,text) VALUES($1,$2)",[machine_id,text]);
  res.sendStatus(200);
 });
 
