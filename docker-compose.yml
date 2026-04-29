@@ -9,7 +9,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  backend:
+backend:
   image: node:18
   working_dir: /app
   volumes:
@@ -18,7 +18,7 @@ services:
   ports:
     - "3000:3000"
 
-  frontend:
+frontend:
   image: node:18
   working_dir: /app
   volumes:
