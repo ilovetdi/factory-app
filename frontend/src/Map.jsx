@@ -1,4 +1,6 @@
-
+if(!token){
+  return <div>nincs token</div>;
+}
 import React,{useEffect,useState} from "react";
 import Draggable from "react-draggable";
 
@@ -28,10 +30,17 @@ export default function Map({token}){
  return(
   <div style={{position:"relative"}}>
     {layout && <img src={"/api"+layout} style={{width:"100%"}}/>}
-    {machines.map(m=>(
-      <Draggable key={m.id} defaultPosition={{x:m.x,y:m.y}}>
-        <div style={{position:"absolute",background:"#ff9800",padding:10}}>⚙</div>
-      </Draggable>
+    {machines && machines.map(m=>(
+  <Draggable key={m.id} defaultPosition={{x:m.x,y:m.y}}>
+    <div style={{
+      position:"absolute",
+      background:"#ff9800",
+      padding:10
+    }}>
+      ⚙
+    </div>
+  </Draggable>
+))}
     ))}
   </div>
  );
