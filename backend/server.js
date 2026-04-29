@@ -4,11 +4,7 @@ const cors = require("cors");
 const { Pool } = require("pg");
 
 const app = express();
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"]
-}));
+app.use(cors());
 app.use(express.json());
 
 const pool = new Pool({
@@ -27,10 +23,7 @@ async function waitForDB() {
       await new Promise(r => setTimeout(r, 2000));
     }
   }
-  await initDB();
-}
 
-async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS machines (
       id SERIAL PRIMARY KEY,
@@ -42,26 +35,30 @@ async function initDB() {
   `);
 }
 
-app.get("/", (req,res)=>res.send("Backend OK"));
-
-app.get("/machines", async (req,res)=>{
+app.get("/machines", async (req, res) => {
   const r = await pool.query("SELECT * FROM machines");
   res.json(r.rows);
 });
 
-app.post("/machines", async (req,res)=>{
-  const {name,x,y,status} = req.body;
-  await pool.query("INSERT INTO machines(name,x,y,status) VALUES($1,$2,$3,$4)",[name,x,y,status]);
+app.post("/machines", async (req, res) => {
+  const { name, x, y, status } = req.body;
+  await pool.query(
+    "INSERT INTO machines(name,x,y,status) VALUES($1,$2,$3,$4)",
+    [name, x, y, status]
+  );
   res.sendStatus(200);
 });
 
-app.put("/machines/:id", async (req,res)=>{
-  const {x,y} = req.body;
-  await pool.query("UPDATE machines SET x=$1,y=$2 WHERE id=$3",[x,y,req.params.id]);
+app.put("/machines/:id", async (req, res) => {
+  const { x, y } = req.body;
+  await pool.query(
+    "UPDATE machines SET x=$1,y=$2 WHERE id=$3",
+    [x, y, req.params.id]
+  );
   res.sendStatus(200);
 });
 
-app.listen(3000, async ()=>{
+app.listen(3000, "0.0.0.0", async () => {
   await waitForDB();
   console.log("Backend running");
 });

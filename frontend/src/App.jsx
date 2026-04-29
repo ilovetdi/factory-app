@@ -2,25 +2,25 @@
 import React, { useEffect, useState } from "react";
 import Draggable from "react-draggable";
 
-const API = "http://backend:3000";
-
 export default function App() {
   const [machines, setMachines] = useState([]);
+
+  const load = async () => {
+    const res = await fetch("/api/machines");
+    const data = await res.json();
+    setMachines(data);
+  };
 
   useEffect(() => {
     load();
   }, []);
 
-  const load = async () => {
-    const res = await fetch(API + "/machines");
-    const data = await res.json();
-    setMachines(data);
-  };
-
   const add = async () => {
-    await fetch(API + "/machines", {
+    await fetch("/api/machines", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         name: "Machine",
         x: 100,
@@ -32,22 +32,24 @@ export default function App() {
   };
 
   const update = async (id, x, y) => {
-    await fetch(API + "/machines/" + id, {
+    await fetch("/api/machines/" + id, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ x, y })
     });
   };
 
   return (
-    <div style={{ padding: 20, background: "#1e1e1e", color: "white", minHeight: "100vh" }}>
+    <div style={{ padding: 20 }}>
       <h1>🏭 Industrial Panel</h1>
       <button onClick={add}>+ Machine</button>
 
       <div style={{
         position: "relative",
         height: "80vh",
-        border: "2px solid #555",
+        border: "2px solid #ccc",
         marginTop: 20
       }}>
         {machines.map(m => (
@@ -60,12 +62,11 @@ export default function App() {
               position: "absolute",
               width: 100,
               height: 60,
-              background: m.status === "green" ? "#2ecc71" : "#e67e22",
+              background: "green",
+              color: "white",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 8,
-              cursor: "pointer"
+              justifyContent: "center"
             }}>
               {m.name}
             </div>
