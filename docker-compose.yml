@@ -10,25 +10,22 @@ services:
       - db_data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - db
-    environment:
-      DB_HOST: db
-      DB_USER: admin
-      DB_PASSWORD: admin
-      DB_NAME: factory
-      JWT_SECRET: supersecret
+  image: node:18
+  working_dir: /app
+  volumes:
+    - ./backend:/app
+  command: sh -c "npm install && node server.js"
+  ports:
+    - "3000:3000"
 
   frontend:
-    build: ./frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-    command: npm run dev
+  image: node:18
+  working_dir: /app
+  volumes:
+    - ./frontend:/app
+  command: sh -c "npm install && npm run dev -- --host"
+  ports:
+    - "5173:5173"
 
 volumes:
   db_data:
