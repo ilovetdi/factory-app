@@ -33,7 +33,28 @@ async function init() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username TEXT,
+      password TEXT
+    );
+  `);
+
+  await pool.query(`
+    INSERT INTO users(username,password)
+    SELECT 'admin','admin'
+    WHERE NOT EXISTS (SELECT 1 FROM users WHERE username='admin');
+  `);
 }
+
+app.post("/login", async (req,res)=>{
+  const {username,password} = req.body;
+  const r = await pool.query("SELECT * FROM users WHERE username=$1 AND password=$2",[username,password]);
+  if(r.rows.length) res.json({ok:true});
+  else res.status(401).json({ok:false});
+});
 
 app.get("/machines", async (req,res)=>{
   const r = await pool.query("SELECT * FROM machines");
