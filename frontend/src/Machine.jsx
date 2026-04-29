@@ -32,14 +32,15 @@ export default function Machine(){
     <div style={{padding:20}}>
       <h2>Machine {id}</h2>
 
-      <input value={text} onChange={e=>setText(e.target.value)} placeholder="mi történt?"/>
+      <input style={{width:"100%",padding:15,fontSize:18}} value={text} onChange={e=>setText(e.target.value)} placeholder="Mi történt?"/>
       <input type="file" accept="image/*" capture="environment" onChange={e=>setFile(e.target.files[0])}/>
+      {file && <img src={URL.createObjectURL(file)} style={{width:200}}/>}
       <button onClick={submit}>MENTÉS</button>
 
       {logs.map(l=>(
         <div key={l.id} style={{marginTop:10,border:"1px solid #333",padding:10}}>
           <div>{l.text}</div>
-          {l.image && <img src={l.image} style={{width:150}}/>}
+          {l.image && <img src={l.image.startsWith("http") ? l.image : "/api"+l.image} style={{width:150}}/>}
         </div>
       ))}
     </div>
